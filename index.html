@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#123b70">
+<meta name="description" content="Table de marque de futsal : score, buts, changements, cartons et fautes cumulées.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Futsal Foot</title>
+<style>
+:root{font-family:Arial,Helvetica,sans-serif;color:#172033;background:#eef3f8}
+*{box-sizing:border-box}body{margin:0;padding:16px}.wrap{max-width:980px;margin:auto}
+header{background:linear-gradient(135deg,#123b70,#176b45);color:white;padding:18px;border-radius:16px;margin-bottom:14px}
+h1{margin:0 0 6px;font-size:25px}p{margin:4px 0;color:inherit}
+.panel{background:white;border-radius:14px;padding:16px;margin:12px 0;box-shadow:0 2px 9px #10204012}
+label{display:block;font-weight:700;margin:8px 0 5px}
+input,select{font:inherit;padding:12px;border:1px solid #cbd5e1;border-radius:9px;width:100%;min-width:0;background:white}
+.names{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.team{border:1px solid #d8e1ec;border-radius:12px;padding:12px}
+.team h2{font-size:18px;margin:0 0 8px}
+.numbers{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;margin-top:10px}
+.num{border:1px solid #b8c6d8;background:#f8fafc;border-radius:9px;padding:10px 2px;text-align:center;font-weight:700;cursor:pointer;min-height:42px}
+.num.selected{background:#176b45;color:#fff;border-color:#176b45}
+.small{font-size:13px;color:#64748b}.staff-row{display:grid;grid-template-columns:minmax(0,1fr) 90px;gap:7px;margin:7px 0}.staff-row select{padding:10px}.staff-row input{padding:10px}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 15px;cursor:pointer}
+.primary{background:#176b45;color:white}.secondary{background:#e7edf5;color:#172033}.danger{background:#fee2e2;color:#991b1b}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.change-sheet{display:flex;flex-direction:column;gap:0;border:1px solid #cbd5e1;border-radius:10px;overflow:hidden;margin-top:12px}.change-row{display:grid;grid-template-columns:1fr;align-items:start;border-bottom:1px solid #cbd5e1;padding:7px 8px;gap:5px}.change-row:last-child{border-bottom:0}.change-row label{margin:0;padding:3px 2px;font-size:13px;font-weight:800}.change-cells{display:flex;flex-wrap:wrap;gap:4px;min-width:0}.change-cells select{box-sizing:border-box;flex:0 0 30px;width:30px;min-width:30px;max-width:30px;height:30px;min-height:30px;aspect-ratio:1/1;border:1px solid #cbd5e1;border-radius:5px;padding:1px;font-size:11px;font-weight:800;text-align:center;background:#fff}.change-cells .fixed-number{box-sizing:border-box;display:flex;flex:0 0 30px;width:30px;min-width:30px;max-width:30px;height:30px;min-height:30px;align-items:center;justify-content:center;border:1px solid #cbd5e1;border-radius:5px;background:#fff;font-size:13px;font-weight:900;color:#172033}.starter-row .change-cells{display:flex;flex-wrap:wrap}.starter-row{background:#e3edc4}.sub-row{background:#f2f3f4}.out-row{background:#f4dddd}.minute-row{background:#f8fafc}@media(max-width:480px){.change-row{padding:6px;gap:4px}.change-cells{gap:4px}.change-cells select{font-size:11px;min-height:30px}.change-cells .fixed-number{font-size:13px;min-height:30px}}.foul-grid{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:6px;margin:8px 0 14px}.foul-square{aspect-ratio:1/1;min-height:36px;padding:4px;border:2px solid #cbd5e1;border-radius:5px;background:#fff;font-size:18px;font-weight:900}.foul-square.active:not(.foul-five):not(.foul-red){background:#176b45;color:#fff;border-color:#176b45}.foul-square.foul-five.active{background:#f5cc36;color:#332700;border-color:#d6a900}.foul-square.foul-red.active{background:#dc2626;color:#fff;border-color:#b91c1c}.foul-square.foul-five{background:#fff;border-color:#cbd5e1;color:#172033}.foul-square.foul-red{background:#fff;border-color:#cbd5e1;color:#172033}.half-roster{margin-top:12px;padding-top:10px;border-top:1px solid #cbd5e1}.half-roster strong{display:block;margin-bottom:6px}.half-roster-cells{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}.half-roster-cells select{height:30px;min-height:30px;padding:2px;text-align:center;font-size:12px;font-weight:800;border-radius:5px}.home-fouls{margin-top:12px;padding-top:10px;border-top:1px solid #cbd5e1}.home-fouls strong{display:block;margin-bottom:6px}.home-fouls .foul-grid{gap:4px;margin:6px 0}.home-fouls .foul-square{min-height:30px;font-size:16px}.home-fouls .foul-minute{font-size:12px;padding:5px 1px}.foul-minute{width:100%;min-width:0;text-align:center;padding:8px 2px;border-radius:5px;border:1px solid #cbd5e1;font-size:14px}.goal-sheet{margin-top:12px;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden}.goal-row{display:grid;grid-template-columns:48px minmax(0,1fr);gap:4px;align-items:start;padding:5px;border-bottom:1px solid #d8e1ec}.goal-row:last-child{border-bottom:0}.goal-row>strong{font-size:12px;padding:7px 2px}.goal-cells{display:grid;grid-template-columns:repeat(18,minmax(0,1fr));gap:3px}.goal-number{aspect-ratio:1/1;min-width:0;display:flex;align-items:center;justify-content:center;border:1px solid #cbd5e1;border-radius:5px;background:#fff;font-size:13px;font-weight:900}.goal-cells select{box-sizing:border-box;min-width:0;width:100%;height:30px;min-height:30px;padding:0;text-align:center;font-size:10px;border-radius:4px}.goal-minute-select{font-size:10px!important}@media(max-width:620px){.goal-row{grid-template-columns:42px minmax(0,1fr);padding:4px}.goal-cells{gap:2px}.goal-cells select{font-size:8px;height:26px;min-height:26px;padding:0}.goal-number{font-size:10px}}
+.hidden{display:none}#foulForm .foul-grid{gap:4px;margin:6px 0 10px}#foulForm .foul-square{min-height:30px;font-size:16px;padding:2px;border-width:1px}#foulForm .foul-minute{font-size:12px;padding:5px 1px;min-height:24px}.scoreline{display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:700;font-size:20px}
+.score{font-size:36px;color:white;background:linear-gradient(110deg,#176baf,#16824a);padding:10px 18px;border-radius:14px;white-space:nowrap}.home-team{border-radius:12px;padding:12px;background:#e5efff;border:2px solid #2463a6}.away-team{border-radius:12px;padding:12px;background:#e2f8eb;border:2px solid #18834d}.home-team label{color:#174e8b}.away-team label{color:#176b45}.score-preview{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;text-align:center;padding:18px;background:linear-gradient(110deg,#1e5fa6,#187747);color:white;border-radius:16px;margin:14px 0}.score-preview .team-label{font-size:18px;font-weight:800;overflow-wrap:anywhere}.score-preview .score-zero{font-size:32px;font-weight:900;white-space:nowrap}.action-tile{flex:1;min-width:130px;min-height:48px}.team-commands{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}.command-team{background:#f8fafc;border:2px solid #d8e1ec;border-radius:12px;padding:12px}.command-team h3{margin:0 0 8px}.command-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px}.command-buttons button{min-width:0;padding:12px 8px}@media(max-width:620px){.team-commands{grid-template-columns:1fr}}.btn-blue{background:#1d64aa;color:white}.btn-yellow{background:#f5cc36;color:#332700}.btn-green{background:#16834a;color:white}
+@media(max-width:620px){body{padding:8px}.names{grid-template-columns:1fr}.numbers{grid-template-columns:repeat(6,minmax(0,1fr))}header{padding:14px}}
+@media print{body{background:white;padding:0}.noprint,button{display:none!important}.panel{box-shadow:none;border:1px solid #ddd;break-inside:avoid}}
+</style>
+</head>
+<body><div class="wrap">
+<div id="saveStatus" style="position:sticky;top:0;z-index:20;background:#e7f7ed;color:#14532d;border:1px solid #a7e0bb;border-radius:8px;padding:7px 10px;margin-bottom:10px;font-size:13px">Sauvegarde locale activée</div>
+<header><h1>⚽ FUTSAL FOOT</h1><p>Table de marque futsal · Version test V37</p></header>
+<section id="home" class="panel">
+<h2>Accueil · Table de marque</h2>
+<p class="small">Les noms des équipes seront renseignés dans la composition et repris automatiquement ici.</p>
+<div class="score-preview"><div class="team-label" id="previewHome">Équipe recevante</div><div class="score-zero"><span id="previewHs">0</span> - <span id="previewAs">0</span></div><div class="team-label" id="previewAway">Équipe visiteuse</div></div>
+<div class="team-commands noprint">
+<div class="command-team home-team"><h3 id="homeCommandsTitle">Équipe recevante</h3><div class="command-buttons"><button class="btn-green" onclick="showTeamForm('goalForm','home')">⚽ But</button><button class="btn-blue" onclick="showTeamForm('changeForm','home')">🔁 Changement</button><button class="btn-yellow" onclick="showTeamForm('cardForm','home')">🟨 Carton</button></div><div class="home-fouls"><strong>Fautes cumulées</strong><div id="homeFoulNumbers" class="foul-grid"></div><div id="homeFoulMinutes" class="foul-grid"></div><div class="actions"><button type="button" class="secondary" id="homePeriod1" onclick="setFoulPeriod('home','1re mi-temps')">1re mi-temps</button><button type="button" class="secondary" id="homePeriod2" onclick="setFoulPeriod('home','2e mi-temps')">2e mi-temps</button><button class="secondary" onclick="undoLastFoul('home')">Corriger erreur</button></div></div><div class="half-roster"><strong>Joueurs sur le terrain à la fin de la 1re mi-temps</strong><div class="half-roster-cells" id="homeHalfRoster"></div></div></div>
+<div class="command-team away-team"><h3 id="awayCommandsTitle">Équipe visiteuse</h3><div class="command-buttons"><button class="btn-green" onclick="showTeamForm('goalForm','away')">⚽ But</button><button class="btn-blue" onclick="showTeamForm('changeForm','away')">🔁 Changement</button><button class="btn-yellow" onclick="showTeamForm('cardForm','away')">🟨 Carton</button></div><div class="home-fouls"><strong>Fautes cumulées</strong><div id="awayFoulNumbers" class="foul-grid"></div><div id="awayFoulMinutes" class="foul-grid"></div><div class="actions"><button type="button" class="secondary" id="awayPeriod1" onclick="setFoulPeriod('away','1re mi-temps')">1re mi-temps</button><button type="button" class="secondary" id="awayPeriod2" onclick="setFoulPeriod('away','2e mi-temps')">2e mi-temps</button><button class="secondary" onclick="undoLastFoul('away')">Corriger erreur</button></div></div><div class="half-roster"><strong>Joueurs sur le terrain à la fin de la 1re mi-temps</strong><div class="half-roster-cells" id="awayHalfRoster"></div></div></div>
+</div>
+<div id="goalForm" class="panel hidden"><h3 id="goalFormTitle">Ajouter un but</h3><input id="goalSide" type="hidden" value="home"><div><label for="goalPeriod">Période</label><select id="goalPeriod" onchange="buildGoalGrid()"><option value="1re mi-temps">1re mi-temps</option><option value="2e mi-temps">2e mi-temps</option></select></div><div class="goal-sheet"><div class="goal-row"><strong>But</strong><div id="goalNumberCells" class="goal-cells"></div></div><div class="goal-row"><strong>Joueur</strong><div id="goalPlayerCells" class="goal-cells"></div></div><div class="goal-row"><strong>Minute</strong><div id="goalMinuteCells" class="goal-cells"></div></div></div><div class="actions"><button class="btn-green" onclick="saveGoalRows()">Enregistrer les buts</button><button class="secondary" onclick="hideForms()">Fermer</button></div></div>
+<div id="changeForm" class="panel hidden"><h3 id="changeFormTitle">Changement</h3><input id="changeSide" type="hidden" value="home"><div class="change-sheet"><div class="change-row starter-row"><label>TITULAIRE</label><div class="change-cells" id="changeStarterCells"></div></div><div class="change-row sub-row"><label>REMPLAÇANT</label><div class="change-cells" id="changeSubCells"></div></div><div class="change-row out-row"><label>SORTANT</label><div class="change-cells" id="changeOutCells"></div></div><div class="change-row minute-row"><label>MINUTE</label><div class="change-cells" id="changeMinuteCells"></div></div></div><div class="actions"><button class="secondary" onclick="closeChangeForm()">Fermer</button></div></div>
+<div id="cardForm" class="panel hidden"><h3>Carton</h3><div class="names"><div><label>Équipe</label><select id="cardSide" onchange="populatePlayers('cardPlayer','cardSide')"><option value="home">Équipe recevante</option><option value="away">Équipe visiteuse</option></select></div><div><label>Joueur</label><select id="cardPlayer"></select></div><div><label>Carton</label><select id="cardType"><option>Jaune</option><option>Rouge</option></select></div><div><label>Minute</label><input id="cardMinute" type="number" min="1" max="40" placeholder="1 à 40"></div></div><div class="actions"><button class="btn-yellow" onclick="recordEvent('Carton','cardSide','cardPlayer','cardMinute','cardType',true)">Valider le carton</button><button class="secondary" onclick="hideForms()">Fermer</button></div></div>
+<div id="foulForm" class="panel hidden"><h3 id="foulFormTitle">Fautes</h3><input id="foulSide" type="hidden" value="home"><label>Numéro de faute</label><div id="foulCountSquares" class="foul-grid"></div><label>Minute correspondante</label><div id="foulMinuteSquares" class="foul-grid"></div><div class="actions"><button class="secondary" onclick="hideForms()">Fermer</button></div></div>
+</div>
+<div class="actions"><button class="btn-blue action-tile" onclick="openSheet()">📋 Composition</button><button class="btn-green action-tile" onclick="startMatch()">▶ Démarrer le match</button></div>
+<p class="small">Les commandes du match sont ici. La composition sert uniquement à renseigner les équipes et les numéros des joueurs.</p>
+</section>
+<section id="sheet" class="hidden">
+<div class="panel scoreline"><span id="homeTitle">Équipe recevante</span><span class="score"><span id="hs">0</span> - <span id="as">0</span></span><span id="awayTitle">Équipe visiteuse</span></div>
+
+<div class="panel">
+<h2>Noms des équipes</h2>
+<div class="names">
+<div class="home-team"><label for="homeName">Équipe recevante</label><input id="homeName" value="Équipe recevante" oninput="updatePreview(); updateTeamLabels()"></div>
+<div class="away-team"><label for="awayName">Équipe visiteuse</label><input id="awayName" value="Équipe visiteuse" oninput="updatePreview(); updateTeamLabels()"></div>
+</div></div>
+<div class="panel">
+<h2>Officiels et table de marque</h2>
+<div class="names">
+<div><label for="ref1">Arbitre 1</label><input id="ref1" type="text" placeholder="Nom de l’arbitre 1"></div>
+<div><label for="ref2">Arbitre 2</label><input id="ref2" type="text" placeholder="Nom de l’arbitre 2"></div>
+<div><label for="ref3">Arbitre 3</label><input id="ref3" type="text" placeholder="Nom de l’arbitre 3"></div>
+<div><label for="table1">Table de marque 1</label><input id="table1" type="text" placeholder="Nom"></div>
+<div><label for="table2">Table de marque 2</label><input id="table2" type="text" placeholder="Nom"></div>
+<div><label for="securityManager">Responsable sécurité</label><input id="securityManager" type="text" placeholder="Nom du responsable sécurité"></div>
+</div></div>
+<div class="names">
+<div class="team"><h2 id="hTeam">Équipe recevante</h2><label>5 titulaires</label><div id="hStarters" class="numbers"></div><label>Remplaçants (jusqu'à 7)</label><div id="hSubs" class="numbers"></div><p class="small">Joueur sélectionné : <strong id="hSelected">aucun</strong></p><label>Staff (4 personnes)</label><div class="staff-rows" id="hStaffRows"></div></div>
+<div class="team"><h2 id="aTeam">Équipe visiteuse</h2><label>5 titulaires</label><div id="aStarters" class="numbers"></div><label>Remplaçants (jusqu'à 7)</label><div id="aSubs" class="numbers"></div><p class="small">Joueur sélectionné : <strong id="aSelected">aucun</strong></p><label>Staff (4 personnes)</label><div class="staff-rows" id="aStaffRows"></div></div>
+</div>
+<div class="panel actions noprint"><button class="primary" onclick="validateComposition()">✓ Valider la composition et revenir à l’accueil</button><button class="secondary" onclick="backHome()">Annuler / Retour à l’accueil</button></div>
+<div class="panel"><h2>Événements du match</h2><div id="events"><p class="small">Aucun événement enregistré.</p></div><div class="actions noprint"><button class="secondary" onclick="window.print()">Imprimer / PDF</button><button class="secondary" onclick="downloadReport()">Télécharger le récapitulatif</button><button class="danger" onclick="resetEvents()">Effacer les événements</button><button class="secondary" onclick="backHome()">Retour à l'accueil</button></div></div>
+</section>
+</div>
+<script>
+let selected={home:null,away:null},events=[],score={home:0,away:0},staff={home:[],away:[]},sheetBuilt=false;
+const changeValues={home:{},away:{}},changeSaved={home:{},away:{}};
+function updatePreview(){const h=document.getElementById('homeName').value.trim()||'Équipe recevante';const a=document.getElementById('awayName').value.trim()||'Équipe visiteuse';document.getElementById('previewHome').textContent=h;document.getElementById('previewAway').textContent=a;document.getElementById('homeCommandsTitle').textContent=h;document.getElementById('awayCommandsTitle').textContent=a}
+const halfRosterValues={home:['','','','',''],away:['','','','','']};
+function buildHalfRoster(side){const box=document.getElementById(side+'HalfRoster');if(!box)return;const old=[...box.querySelectorAll('select')].map((x,i)=>x.value||halfRosterValues[side][i]||'');const nums=[...new Set(getNumbers(side))];box.innerHTML='';for(let i=0;i<5;i++){const sel=document.createElement('select');sel.setAttribute('aria-label','Joueur sur le terrain fin 1re mi-temps '+(i+1));const blank=document.createElement('option');blank.value='';blank.textContent='—';sel.appendChild(blank);nums.forEach(n=>{const opt=document.createElement('option');opt.value=n;opt.textContent=n;sel.appendChild(opt)});if(old[i]&&nums.includes(old[i]))sel.value=old[i];sel.addEventListener('change',()=>{halfRosterValues[side][i]=sel.value});box.appendChild(sel)}}
+function updateTeamLabels(){const h=teamName('home'),a=teamName('away');['hTeam','homeTitle'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=h});['aTeam','awayTitle'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=a})}
+function teamName(side){return document.getElementById(side==='home'?'homeName':'awayName').value.trim()||(side==='home'?'Équipe recevante':'Équipe visiteuse')}
+function buildStaffRows(side){
+  const box=document.getElementById(side==='home'?'hStaffRows':'aStaffRows');
+  box.innerHTML='';
+  for(let i=1;i<=4;i++){
+    const row=document.createElement('div'); row.className='staff-row';
+    const name=document.createElement('input'); name.type='text'; name.id=(side==='home'?'h':'a')+'StaffName'+i; name.placeholder='Nom du membre du staff '+i; name.setAttribute('aria-label','Nom du membre du staff '+i);
+    const role=document.createElement('select'); role.id=(side==='home'?'h':'a')+'StaffRole'+i; role.setAttribute('aria-label','Fonction du membre du staff '+i);
+    [['E','Éducateur'],['D','Dirigeant'],['M','Médecin']].forEach(([value,label])=>{const opt=document.createElement('option');opt.value=value;opt.textContent=label;role.appendChild(opt)});
+    row.append(name,role); box.appendChild(row);
+  }
+}
+function choose(side,number){selected[side]=number;const el=document.getElementById(side==='home'?'hSelected':'aSelected');if(el)el.textContent='n°'+number}
+function collectStaff(side){const box=document.getElementById(side==='home'?'hStaffRows':'aStaffRows');if(!box)return [];return Array.from(box.querySelectorAll('.staff-row')).map(row=>{const name=row.querySelector('input').value.trim();const role=row.querySelector('select').selectedOptions[0].textContent;return name?name+' ('+role+')':''}).filter(Boolean)}
+function openSheet(){
+  updatePreview();
+  if(!sheetBuilt){
+  ['home','away'].forEach(side=>{
+    const name=teamName(side);
+    document.getElementById(side==='home'?'hTeam':'aTeam').textContent=name;
+    document.getElementById(side==='home'?'homeTitle':'awayTitle').textContent=name;
+    [['Starters',5,'Titulaire'],['Subs',7,'Remplaçant']].forEach(([kind,count,label])=>{
+      const box=document.getElementById((side==='home'?'h':'a')+kind);
+      box.innerHTML='';
+      for(let i=1;i<=count;i++){
+        const inp=document.createElement('input');
+        inp.className='num'; inp.type='number'; inp.min='0'; inp.max='99'; inp.placeholder='N°';
+        inp.id=(side==='home'?'h':'a')+(kind==='Starters'?'Starter':'Sub')+i; inp.setAttribute('aria-label',label+' '+i); inp.title=label+' : saisir le numéro';
+        inp.style.width='100%'; inp.style.padding='10px 2px'; inp.style.textAlign='center';
+        inp.onchange=()=>{const n=Number(inp.value);if(inp.value!==''&&n>=0&&n<=99){inp.dataset.number=String(n)}else{inp.value='';delete inp.dataset.number}if(document.getElementById('goalPlayer'))populateGoalPlayers()};
+        inp.onclick=()=>{if(inp.value.trim()!=='')choose(side,Number(inp.value))};
+        box.appendChild(inp);
+      }
+    });
+    buildStaffRows(side);
+  });
+  sheetBuilt=true;
+  restoreDynamicFields();
+  }
+  document.getElementById('home').classList.add('hidden');
+  document.getElementById('sheet').classList.remove('hidden');
+  ['goalPlayer','cardPlayer','foulPlayer'].forEach(id=>{const sideId=id.startsWith('goal')?'goalSide':id.startsWith('change')?'changeSide':id.startsWith('card')?'cardSide':'foulSide';populatePlayers(id,sideId)});
+}
+function showTeamForm(id,side){if(id==='foulForm'){document.getElementById('foulSide').value=side;document.getElementById('foulFormTitle').textContent='Fautes · '+teamName(side);buildFoulSquares(side);} if(id==='goalForm'){document.getElementById('goalSide').value=side;document.getElementById('goalFormTitle').textContent='Buts · '+teamName(side);buildGoalGrid();} if(id==='changeForm'){document.getElementById('changeFormTitle').textContent='Changement · '+teamName(side);populateChangeRoster();} const map={goalForm:'goalSide',changeForm:'changeSide',cardForm:'cardSide',foulForm:'foulSide'};const sel=document.getElementById(map[id]);if(sel){sel.value=side;if(sel.options)Array.from(sel.options).forEach(o=>o.textContent=teamName(o.value))}showForm(id);if(sel)sel.value=side;['goalPlayer','changeOut','cardPlayer','foulPlayer'].forEach(pid=>{const sid=pid.startsWith('goal')?'goalSide':pid.startsWith('change')?'changeSide':pid.startsWith('card')?'cardSide':'foulSide';populatePlayers(pid,sid)});populateChangeRoster();}
+function showForm(id){hideForms();document.getElementById(id).classList.remove('hidden');if(id==='goalForm')buildGoalGrid();['goalSide','changeSide','cardSide','foulSide'].forEach(id=>{const e=document.getElementById(id);if(e&&e.tagName==='SELECT'&&e.selectedIndex>=0)e.options[e.selectedIndex].text=teamName(e.value)});['goalPlayer','changeOut','cardPlayer','foulPlayer'].forEach(id=>{const sideId=id.startsWith('goal')?'goalSide':id.startsWith('change')?'changeSide':id.startsWith('card')?'cardSide':'foulSide';populatePlayers(id,sideId)});populateChangeRoster();}
+function hideForms(){if(!document.getElementById('changeForm').classList.contains('hidden')){saveChangeRows();document.getElementById('changeForm').classList.add('hidden')}['goalForm','changeForm','cardForm','foulForm'].forEach(id=>document.getElementById(id).classList.add('hidden'))}
+function closeChangeForm(){saveChangeRows();document.getElementById('changeForm').classList.add('hidden');render()}
+function buildGoalGrid(){const side=document.getElementById('goalSide').value||'home';const period=document.getElementById('goalPeriod').value;const start=period==='1re mi-temps'?1:21;const end=period==='1re mi-temps'?20:40;const nums=[...new Set(getNumbers(side))];const numberBox=document.getElementById('goalNumberCells'),playerBox=document.getElementById('goalPlayerCells'),minuteBox=document.getElementById('goalMinuteCells');if(!numberBox||!playerBox||!minuteBox)return;const oldPlayers=[...playerBox.querySelectorAll('select')].map(x=>x.value);const oldMinutes=[...minuteBox.querySelectorAll('select')].map(x=>x.value);const savedGoals=events.filter(e=>e.type==='But'&&e.side===side&&e.period===period);numberBox.innerHTML='';playerBox.innerHTML='';minuteBox.innerHTML='';for(let i=0;i<18;i++){const saved=savedGoals.find(e=>e.goalColumn===i||(e.goalColumn===undefined&&typeof e.goalSlot==='string'&&Number(e.goalSlot.split('|').pop())===i));const n=document.createElement('div');n.className='goal-number';n.textContent=i+1;numberBox.appendChild(n);const player=document.createElement('select');player.setAttribute('aria-label','Buteur '+(i+1));const blank=document.createElement('option');blank.value='';blank.textContent='—';player.appendChild(blank);nums.forEach(num=>{const o=document.createElement('option');o.value=num;o.textContent=num;player.appendChild(o)});const playerValue=oldPlayers[i]&&nums.includes(oldPlayers[i])?oldPlayers[i]:(saved&&nums.includes(String(saved.number))?String(saved.number):'');if(playerValue)player.value=playerValue;playerBox.appendChild(player);const minute=document.createElement('select');minute.className='goal-minute-select';minute.setAttribute('aria-label','Minute du but '+(i+1));const empty=document.createElement('option');empty.value='';empty.textContent='—';minute.appendChild(empty);for(let m=start;m<=end;m++){const o=document.createElement('option');o.value=String(m);o.textContent=String(m);minute.appendChild(o)}const minuteValue=oldMinutes[i]&&Number(oldMinutes[i])>=start&&Number(oldMinutes[i])<=end?oldMinutes[i]:(saved&&Number(saved.minute)>=start&&Number(saved.minute)<=end?String(saved.minute):'');if(minuteValue)minute.value=minuteValue;minuteBox.appendChild(minute)}}
+function saveGoalRows(){const side=document.getElementById('goalSide').value;const period=document.getElementById('goalPeriod').value;const players=[...document.querySelectorAll('#goalPlayerCells select')];const minutes=[...document.querySelectorAll('#goalMinuteCells select')];const rows=[];for(let i=0;i<18;i++){const number=players[i]?.value||'';const minute=minutes[i]?.value||'';if(!number&&!minute)continue;if(!number||!minute){alert('Pour chaque but, choisis le joueur et la minute sur la même colonne.');return}rows.push({i,number,minute,signature:side+'|'+period+'|'+number+'|'+minute+'|'+i})}if(!rows.length){alert('Choisis au moins un joueur et une minute pour enregistrer un but.');return}let changed=false;for(const row of rows){const previous=events.find(e=>e.type==='But'&&e.side===side&&e.period===period&&(e.goalColumn===row.i||(e.goalColumn===undefined&&typeof e.goalSlot==='string'&&Number(e.goalSlot.split('|').pop())===row.i)));if(previous&&previous.number===row.number&&String(previous.minute)===String(row.minute))continue;events=events.filter(e=>!(e.type==='But'&&e.side===side&&e.period===period&&(e.goalColumn===row.i||(e.goalColumn===undefined&&typeof e.goalSlot==='string'&&Number(e.goalSlot.split('|').pop())===row.i))));events.push({id:Date.now()+Math.random(),goalColumn:row.i,goalSlot:row.signature,side,team:teamName(side),number:row.number,type:'But',minute:row.minute,period,detail:''});changed=true}if(changed){score={home:events.filter(e=>e.type==='But'&&e.side==='home').length,away:events.filter(e=>e.type==='But'&&e.side==='away').length};render();hideForms()}else alert('Ces buts sont déjà enregistrés.')}
+function getNumbers(side){const prefix=side==='home'?'h':'a';return [...document.querySelectorAll('#'+prefix+'Starters input, #'+prefix+'Subs input')].map(x=>x.value.trim()).filter(x=>x!=='' )}
+function populatePlayers(selectId,sideId){const sel=document.getElementById(selectId);if(!sel)return;const side=document.getElementById(sideId).value;const nums=[...new Set(getNumbers(side))];sel.innerHTML='';if(selectId==='foulPlayer'){const opt=document.createElement('option');opt.value='';opt.textContent='Aucun joueur précisé';sel.appendChild(opt)}nums.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent='N° '+n;sel.appendChild(o)});if(!nums.length){const o=document.createElement('option');o.value='';o.textContent='Saisir les numéros dans Composition';sel.appendChild(o)}}
+function recordEvent(type,sideId,playerId,minuteId,detailId,detailIsType=false){const side=document.getElementById(sideId).value;const number=document.getElementById(playerId).value;const minute=document.getElementById(minuteId).value;const detail=document.getElementById(detailId).value;if(!number){alert('Renseigne les numéros des joueurs dans Composition avant d’enregistrer cet événement.');return}if(type==='But'){const period=document.getElementById('goalPeriod').value;const n=Number(minute);if(!minute||n<Number(document.getElementById('goalMinute').min)||n>Number(document.getElementById('goalMinute').max)){alert(period==='1re mi-temps'?'Pour la 1re mi-temps, choisis une minute de 1 à 20.':'Pour la 2e mi-temps, choisis une minute de 21 à 40.');return}}const e={id:Date.now()+Math.random(),side,team:teamName(side),number,type,minute,period:type==='But'?document.getElementById('goalPeriod').value:'Match',detail:detailIsType?detail:''};events.push(e);if(type==='But')score[side]++;render();hideForms()}
+function populateChangeRoster(){const side=document.getElementById('changeSide').value;const prefix=side==='home'?'h':'a';const starters=[...document.querySelectorAll('#'+prefix+'Starters input')].map(x=>x.value.trim());const subs=[...document.querySelectorAll('#'+prefix+'Subs input')].map(x=>x.value.trim());const minutes=Array.from({length:40},(_,i)=>String(i+1));function fixed(id,count,nums,kind){const box=document.getElementById(id);if(!box)return;box.innerHTML='';for(let i=0;i<count;i++){const cell=document.createElement('div');cell.className='fixed-number';cell.textContent=nums[i]||'—';cell.setAttribute('aria-label',kind+' '+(i+1)+': '+(nums[i]||'non renseigné'));box.appendChild(cell)}}function fill(id,count,nums,placeholder){const box=document.getElementById(id);if(!box)return;const old=[...box.querySelectorAll('select')].map(x=>x.value);box.innerHTML='';for(let i=0;i<count;i++){const sel=document.createElement('select');sel.setAttribute('aria-label',placeholder+' '+(i+1));const first=document.createElement('option');first.value='';first.textContent='—';sel.appendChild(first);nums.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o)});const saved=changeValues[side][id+'_'+i];const previous=saved!==undefined?saved:(old[i]||'');if(previous&&nums.includes(previous))sel.value=previous;sel.addEventListener('change',()=>{changeValues[side][id+'_'+i]=sel.value});box.appendChild(sel)}}fixed('changeStarterCells',5,starters,'Titulaire');fixed('changeSubCells',7,subs,'Remplaçant');fill('changeOutCells',7,[...new Set([...starters,...subs].filter(Boolean))],'Sortant');fill('changeMinuteCells',7,minutes,'Minute')}
+function saveChangeRows(){const side=document.getElementById('changeSide').value;const starters=[...document.querySelectorAll('#changeStarterCells .fixed-number')].map(x=>x.textContent==='—'?'':x.textContent);const subs=[...document.querySelectorAll('#changeSubCells .fixed-number')].map(x=>x.textContent==='—'?'':x.textContent);const outs=[...document.querySelectorAll('#changeOutCells select')].map(x=>x.value);const mins=[...document.querySelectorAll('#changeMinuteCells select')].map(x=>x.value);let changed=false;for(let i=0;i<7;i++){const starter=starters[i]||'';const sub=subs[i]||'';const out=outs[i]||'';const minute=mins[i]||'';const previous=changeSaved[side][i];if(!sub||!out||!minute){if(previous!==undefined){events=events.filter(e=>!(e.type==='Changement'&&e.side===side&&e.changeSlot===i));delete changeSaved[side][i];changed=true}continue}const signature=[starter,sub,out,minute].join('|');if(previous===signature)continue;events=events.filter(e=>!(e.type==='Changement'&&e.side===side&&e.changeSlot===i));events.push({id:Date.now()+Math.random(),changeSlot:i,side,team:teamName(side),number:out,type:'Changement',minute,period:'Match',detail:(starter?'titulaire n°'+starter+', ':'')+'remplaçant n°'+sub+', sortant n°'+out});changeSaved[side][i]=signature;changed=true}if(changed)render()}
+
+let foulSelections={home:{},away:{}};let foulPeriod={home:'1re mi-temps',away:'1re mi-temps'};function setFoulPeriod(side,period){foulPeriod[side]=period;const first=period==='1re mi-temps';document.getElementById(side+'Period1').classList.toggle('btn-blue',first);document.getElementById(side+'Period2').classList.toggle('btn-blue',!first);updateFoulMinuteLimits(side);buildHomeFoulTracker(side)}function buildHomeFoulTracker(side){const numbers=document.getElementById(side+'FoulNumbers'),minutes=document.getElementById(side+'FoulMinutes');if(!numbers||!minutes)return;numbers.innerHTML='';minutes.innerHTML='';for(let n=1;n<=9;n++){const b=document.createElement('button');b.type='button';const hasMinute=!!foulSelections[side]['minute'+n];b.className='foul-square'+(n===5&&hasMinute?' foul-five':n>=6&&hasMinute?' foul-red':'')+(hasMinute?' active':'');b.textContent=n;b.setAttribute('aria-label','Faute cumulée '+n);b.onclick=()=>{foulSelections[side][n]=!foulSelections[side][n];b.classList.toggle('active',foulSelections[side][n]);if(foulSelections[side][n]&&foulSelections[side]['minute'+n])addFoulEvent(side,n,foulSelections[side]['minute'+n]);render()};numbers.appendChild(b);const input=document.createElement('input');input.type='number';input.min=foulPeriod[side]==='1re mi-temps'?'1':'21';input.max=foulPeriod[side]==='1re mi-temps'?'20':'40';input.placeholder='Min';input.className='foul-minute';input.setAttribute('aria-label','Minute faute '+n);input.value=foulSelections[side]['minute'+n]||'';input.onchange=()=>{foulSelections[side]['minute'+n]=input.value;if(input.value){addFoulEvent(side,n,input.value,foulPeriod[side])}else render()};minutes.appendChild(input)}}function addFoulEvent(side,n,minute,period){period=period||foulPeriod[side];const sig=side+'|'+period+'|'+n+'|'+minute;if(events.some(e=>e.type==='Faute'&&e.signature===sig))return;events.push({id:Date.now()+Math.random(),signature:sig,side,team:teamName(side),number:n,type:'Faute',minute,period,detail:'Faute cumulée n°'+n});render()}
+function updateFoulMinuteLimits(side){buildHomeFoulTracker(side)}
+function undoLastFoul(side){const foul=events.map((e,i)=>({e,i})).filter(x=>x.e.type==='Faute'&&x.e.side===side).pop();if(foul){events.splice(foul.i,1);const n=Number(foul.e.number);const suffix=foul.e.period==='1re mi-temps'?'1':'2';delete foulSelections[side]['minute'+n+'_'+suffix];foulSelections[side][n]=false;render()}else{const suffix=foulPeriod[side]==='1re mi-temps'?'1':'2';const keys=Object.keys(foulSelections[side]).filter(k=>k.startsWith('minute')&&k.endsWith('_'+suffix)&&foulSelections[side][k]);const key=keys.pop();if(key){delete foulSelections[side][key];foulSelections[side][Number(key.slice(6))]=false;render()}}}function buildFoulSquares(side){const counts=document.getElementById('foulCountSquares'),minutes=document.getElementById('foulMinuteSquares');counts.innerHTML='';minutes.innerHTML='';for(let n=1;n<=9;n++){const b=document.createElement('button');b.type='button';b.className='foul-square'+(foulSelections[side][n]?' active':'');b.textContent=n;b.setAttribute('aria-label','Faute '+n);b.onclick=()=>{foulSelections[side][n]=!foulSelections[side][n];b.classList.toggle('active',foulSelections[side][n]);if(foulSelections[side][n]){const m=minutes.querySelector('[data-minute="'+n+'"]');if(m&&m.value)events.push({id:Date.now()+Math.random(),side,team:teamName(side),number:n,type:'Faute',minute:m.value,period:foulPeriod[side],detail:'Faute cumulée n°'+n});render()}};counts.appendChild(b);const input=document.createElement('input');input.type='number';input.min='1';input.max='40';input.placeholder=String(n);input.className='foul-minute';input.setAttribute('aria-label','Minute de la faute '+n);input.dataset.minute=String(n);input.value=foulSelections[side]['minute'+n]||'';input.onchange=()=>{foulSelections[side]['minute'+n]=input.value;if(foulSelections[side][n]&&input.value){events.push({id:Date.now()+Math.random(),side,team:teamName(side),number:n,type:'Faute',minute:input.value,period:foulPeriod[side],detail:'Faute cumulée n°'+n});render()}};minutes.appendChild(input)}}
+function render(){buildHomeFoulTracker('home');buildHomeFoulTracker('away');document.getElementById('hs').textContent=score.home;document.getElementById('as').textContent=score.away;document.getElementById('previewHs').textContent=score.home;document.getElementById('previewAs').textContent=score.away;let el=document.getElementById('events');if(!events.length){el.innerHTML='<p class="small">Aucun événement enregistré.</p>';return}el.innerHTML='';events.forEach((e,i)=>{let p=document.createElement('p');p.textContent=(i+1)+'. '+(e.minute?e.minute+"' · ":'')+e.period+' · '+e.team+' · n°'+e.number+' · '+e.type+(e.detail?' ('+e.detail+')':'');let b=document.createElement('button');b.className='danger noprint';b.textContent='Annuler';b.style.marginLeft='8px';b.onclick=()=>{events.splice(i,1);score={home:events.filter(x=>x.side==='home'&&x.type==='But').length,away:events.filter(x=>x.side==='away'&&x.type==='But').length};render()};p.appendChild(b);el.appendChild(p)})}
+function resetEvents(){if(confirm('Effacer tous les événements ?')){events=[];score={home:0,away:0};render()}}
+function validateComposition(){buildHalfRoster('home');buildHalfRoster('away');updatePreview();updateTeamLabels();['goalPlayer','cardPlayer','foulPlayer'].forEach(id=>{const sideId=id.startsWith('goal')?'goalSide':id.startsWith('change')?'changeSide':id.startsWith('card')?'cardSide':'foulSide';populatePlayers(id,sideId)});backHome();}
+function backHome(){buildHalfRoster('home');buildHalfRoster('away');document.getElementById('sheet').classList.add('hidden');document.getElementById('home').classList.remove('hidden');updatePreview();updateTeamLabels()}
+function startMatch(){updatePreview();updateTeamLabels();document.getElementById('home').scrollIntoView({behavior:'smooth'});}
+function downloadReport(){let txt='FUTSAL FOOT - FEUILLE DE MATCH\n'+teamName('home')+' '+score.home+' - '+score.away+' '+teamName('away')+'\n\nOFFICIELS\nArbitre 1 : '+(document.getElementById('ref1')?.value||'')+'\nArbitre 2 : '+(document.getElementById('ref2')?.value||'')+'\nArbitre 3 : '+(document.getElementById('ref3')?.value||'')+'\nTable de marque 1 : '+(document.getElementById('table1')?.value||'')+'\nTable de marque 2 : '+(document.getElementById('table2')?.value||'')+'\nResponsable sécurité : '+(document.getElementById('securityManager')?.value||'')+'\n\nSTAFF '+teamName('home')+': '+collectStaff('home').join(' ; ')+'\nSTAFF '+teamName('away')+': '+collectStaff('away').join(' ; ')+'\n\n'+events.map((e,i)=>`${i+1}. ${e.minute?e.minute+"' · " : ''}${e.period} · ${e.team} · n°${e.number} · ${e.type}${e.detail?' ('+e.detail+')':''}`).join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));a.download='feuille-match-futsal.txt';a.click();URL.revokeObjectURL(a.href)}
+
+/* Sauvegarde automatique locale - Futsal Foot */
+const FUTSAL_SAVE_KEY = 'futsal-foot-match-v37';
+let futsalRestoring = false;
+function futsalPersist() {
+  if (futsalRestoring) return;
+  try {
+    const fields = {};
+    document.querySelectorAll('input[id], select[id], textarea[id]').forEach(el => {
+      if (el.type === 'checkbox' || el.type === 'radio') fields[el.id] = el.checked;
+      else fields[el.id] = el.value;
+    });
+    const state = {
+      fields, events, score, foulSelections, foulPeriod, changeValues, changeSaved,
+      halfRosterValues, selected, savedAt: new Date().toISOString()
+    };
+    localStorage.setItem(FUTSAL_SAVE_KEY, JSON.stringify(state));
+    const status = document.getElementById('saveStatus');
+    if (status) status.textContent = '✓ Match sauvegardé automatiquement sur cet appareil';
+  } catch (e) {
+    const status = document.getElementById('saveStatus');
+    if (status) status.textContent = 'Sauvegarde indisponible dans ce mode d’ouverture';
+  }
+}
+function futsalRestore() {
+  let state;
+  try { state = JSON.parse(localStorage.getItem(FUTSAL_SAVE_KEY) || 'null'); } catch (_) { state = null; }
+  if (!state) return;
+  futsalRestoring = true;
+  try {
+    Object.entries(state.fields || {}).forEach(([id, value]) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.type === 'checkbox' || el.type === 'radio') el.checked = !!value;
+      else if (el.tagName !== 'SELECT' || [...el.options].some(o => o.value === value)) el.value = value;
+    });
+    if (Array.isArray(state.events)) events = state.events;
+    if (state.score) score = state.score;
+    if (state.foulSelections) foulSelections = state.foulSelections;
+    if (state.foulPeriod) foulPeriod = state.foulPeriod;
+    if (state.changeValues) { changeValues.home = state.changeValues.home || {}; changeValues.away = state.changeValues.away || {}; }
+    if (state.changeSaved) { changeSaved.home = state.changeSaved.home || {}; changeSaved.away = state.changeSaved.away || {}; }
+    if (state.halfRosterValues) { halfRosterValues.home = state.halfRosterValues.home || ['','','','','']; halfRosterValues.away = state.halfRosterValues.away || ['','','','','']; }
+    if (state.selected) selected = state.selected;
+    const status = document.getElementById('saveStatus');
+    if (status) status.textContent = '✓ Dernier match restauré depuis cet appareil';
+  } catch (e) {
+    console.warn('Restauration de la sauvegarde impossible', e);
+  } finally { futsalRestoring = false; }
+}
+function restoreDynamicFields() {
+  try {
+    const state = JSON.parse(localStorage.getItem(FUTSAL_SAVE_KEY) || 'null');
+    const fields = state && state.fields ? state.fields : {};
+    Object.entries(fields).forEach(([id, value]) => {
+      const el = document.getElementById(id);
+      if (!el || !/^[ha](Starter|Sub|StaffName|StaffRole)\d+$/.test(id)) return;
+      if (el.tagName === 'SELECT') {
+        if ([...el.options].some(o => o.value === value)) el.value = value;
+      } else el.value = value;
+    });
+  } catch (_) {}
+}
+/* Suivi des fautes cumulées : minutes contrôlées selon la période. */
+function buildHomeFoulTracker(side){
+  const numbers=document.getElementById(side+'FoulNumbers');
+  const minutes=document.getElementById(side+'FoulMinutes');
+  if(!numbers||!minutes)return;
+  numbers.innerHTML='';minutes.innerHTML='';
+  const first=foulPeriod[side]==='1re mi-temps';
+  for(let n=1;n<=9;n++){
+    const suffix=first?'1':'2';
+    const minuteKey='minute'+n+'_'+suffix;
+    const legacyKey='minute'+n;
+    if(foulSelections[side][minuteKey]===undefined&&foulSelections[side][legacyKey]){const legacy=Number(foulSelections[side][legacyKey]);if(legacy>=(first?1:21)&&legacy<=(first?20:40))foulSelections[side][minuteKey]=String(legacy)}
+    const value=foulSelections[side][minuteKey]||'';
+    const b=document.createElement('button');b.type='button';
+    b.className='foul-square'+(n===5?' foul-five':n>=6?' foul-red':'')+(value?' active':'');
+    b.textContent=n;b.setAttribute('aria-label','Faute cumulée '+n);
+    b.onclick=()=>{if(value){const sig=side+'|'+foulPeriod[side]+'|'+n+'|'+value;events=events.filter(e=>!(e.type==='Faute'&&e.signature===sig));delete foulSelections[side][minuteKey];foulSelections[side][n]=false;render();}};
+    numbers.appendChild(b);
+    const input=document.createElement('input');input.type='number';input.min=first?'1':'21';input.max=first?'20':'40';input.placeholder=first?'1-20':'21-40';input.className='foul-minute';input.setAttribute('aria-label','Minute faute '+n);input.value=value;
+    input.onchange=()=>{
+      const v=input.value.trim();
+      if(v&&(Number(v)<Number(input.min)||Number(v)>Number(input.max))){alert(first?'La minute doit être comprise entre 1 et 20.':'La minute doit être comprise entre 21 et 40.');input.value=value;return;}
+      const old=value;
+      if(old){const oldSig=side+'|'+foulPeriod[side]+'|'+n+'|'+old;events=events.filter(e=>!(e.type==='Faute'&&e.signature===oldSig));}
+      if(v)foulSelections[side][minuteKey]=v;else delete foulSelections[side][minuteKey];
+      if(v)addFoulEvent(side,n,v,foulPeriod[side]);else render();
+    };
+    minutes.appendChild(input);
+  }
+}
+const futsalOriginalRecordEvent = recordEvent;
+recordEvent = function(type, sideId, playerId, minuteId, detailId, detailIsType=false) {
+  if (type === 'Carton') {
+    const field = document.getElementById(minuteId);
+    const minute = Number(field && field.value);
+    if (!field || !field.value || !Number.isInteger(minute) || minute < 1 || minute > 40) {
+      alert('Pour un carton, choisis une minute comprise entre 1 et 40.');
+      return;
+    }
+  }
+  return futsalOriginalRecordEvent(type, sideId, playerId, minuteId, detailId, detailIsType);
+};
+const futsalOriginalRender = render;
+render = function() { futsalOriginalRender(); futsalPersist(); };
+document.addEventListener('input', futsalPersist);
+document.addEventListener('change', futsalPersist);
+window.addEventListener('beforeunload', futsalPersist);
+
+document.addEventListener('DOMContentLoaded',()=>{futsalRestore();buildHomeFoulTracker('home');buildHomeFoulTracker('away');buildHalfRoster('home');buildHalfRoster('away');render();});
+if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(err => console.warn('Service worker indisponible', err))); }
+</script></body></html>

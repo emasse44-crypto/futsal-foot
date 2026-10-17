@@ -1,0 +1,9 @@
+FUTSAL FOOT V37 - VERSION INSTALLABLE PAR CHROME
+
+Cette archive contient la version web préparée comme PWA : index.html, manifest.webmanifest, sw.js et les icônes.
+
+IMPORTANT : elle doit être publiée sur une adresse HTTPS pour que Chrome propose l’installation. Ouvrir le fichier index.html directement depuis le téléphone ne suffit pas.
+
+Après publication : ouvrir l’adresse du site dans Chrome sur Android, menu ⋮, puis « Installer l’application » ou « Ajouter à l’écran d’accueil ».
+
+Les données de match sont conservées dans le stockage local du navigateur pour cette adresse. Si l’adresse du site change, les données de l’ancienne adresse ne sont pas automatiquement transférées.
