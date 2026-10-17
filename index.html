@@ -50,7 +50,7 @@ button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 15p
 <div id="cardForm" class="panel hidden"><h3>Carton</h3><div class="names"><div><label>Équipe</label><select id="cardSide" onchange="populatePlayers('cardPlayer','cardSide')"><option value="home">Équipe recevante</option><option value="away">Équipe visiteuse</option></select></div><div><label>Joueur</label><select id="cardPlayer"></select></div><div><label>Carton</label><select id="cardType"><option>Jaune</option><option>Rouge</option></select></div><div><label>Minute</label><input id="cardMinute" type="number" min="1" max="40" placeholder="1 à 40"></div></div><div class="actions"><button class="btn-yellow" onclick="recordEvent('Carton','cardSide','cardPlayer','cardMinute','cardType',true)">Valider le carton</button><button class="secondary" onclick="hideForms()">Fermer</button></div></div>
 <div id="foulForm" class="panel hidden"><h3 id="foulFormTitle">Fautes</h3><input id="foulSide" type="hidden" value="home"><label>Numéro de faute</label><div id="foulCountSquares" class="foul-grid"></div><label>Minute correspondante</label><div id="foulMinuteSquares" class="foul-grid"></div><div class="actions"><button class="secondary" onclick="hideForms()">Fermer</button></div></div>
 </div>
-<div class="actions"><button class="btn-blue action-tile" onclick="openSheet()">📋 Composition</button><button class="btn-green action-tile" onclick="startMatch()">▶ Démarrer le match</button></div>
+<div class="actions"><button class="btn-blue action-tile" onclick="openSheet()">📋 Composition</button></div>
 <p class="small">Les commandes du match sont ici. La composition sert uniquement à renseigner les équipes et les numéros des joueurs.</p>
 </section>
 <section id="sheet" class="hidden">
