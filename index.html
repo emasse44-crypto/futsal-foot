@@ -50,8 +50,12 @@ button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 15p
 <div id="cardForm" class="panel hidden"><h3>Carton</h3><div class="names"><div><label>Équipe</label><select id="cardSide" onchange="populatePlayers('cardPlayer','cardSide')"><option value="home">Équipe recevante</option><option value="away">Équipe visiteuse</option></select></div><div><label>Joueur</label><select id="cardPlayer"></select></div><div><label>Carton</label><select id="cardType"><option>Jaune</option><option>Rouge</option></select></div><div><label>Minute</label><input id="cardMinute" type="number" min="1" max="40" placeholder="1 à 40"></div></div><div class="actions"><button class="btn-yellow" onclick="recordEvent('Carton','cardSide','cardPlayer','cardMinute','cardType',true)">Valider le carton</button><button class="secondary" onclick="hideForms()">Fermer</button></div></div>
 <div id="foulForm" class="panel hidden"><h3 id="foulFormTitle">Fautes</h3><input id="foulSide" type="hidden" value="home"><label>Numéro de faute</label><div id="foulCountSquares" class="foul-grid"></div><label>Minute correspondante</label><div id="foulMinuteSquares" class="foul-grid"></div><div class="actions"><button class="secondary" onclick="hideForms()">Fermer</button></div></div>
 </div>
-<div class="actions"><button class="btn-blue action-tile" onclick="openSheet()">📋 Composition</button></div>
+<div class="actions report-home-actions"><button class="btn-blue action-tile" onclick="openSheet()">📋 Composition</button><button class="btn-green action-tile" onclick="openReport()">📄 Rapport</button></div>
 <p class="small">Les commandes du match sont ici. La composition sert uniquement à renseigner les équipes et les numéros des joueurs.</p>
+</section>
+<section id="reportPage" class="hidden form-page">
+<div class="panel scoreline"><span id="reportHomeName">Équipe recevante</span><span class="score"><span id="reportHomeScore">0</span> - <span id="reportAwayScore">0</span></span><span id="reportAwayName">Équipe visiteuse</span></div>
+<div class="panel"><h2>Rapport du match</h2><p class="small">Événements classés par équipe.</p><div id="reportContent"></div><div class="actions"><button class="secondary" onclick="closeReport()">← Retour à l’accueil</button></div></div>
 </section>
 <section id="sheet" class="hidden">
 <div class="panel scoreline"><span id="homeTitle">Équipe recevante</span><span class="score"><span id="hs">0</span> - <span id="as">0</span></span><span id="awayTitle">Équipe visiteuse</span></div>
@@ -146,6 +150,31 @@ let foulSelections={home:{},away:{}};let foulPeriod={home:'1re mi-temps',away:'1
 function updateFoulMinuteLimits(side){buildHomeFoulTracker(side)}
 function undoLastFoul(side){const foul=events.map((e,i)=>({e,i})).filter(x=>x.e.type==='Faute'&&x.e.side===side).pop();if(foul){events.splice(foul.i,1);const n=Number(foul.e.number);const suffix=foul.e.period==='1re mi-temps'?'1':'2';delete foulSelections[side]['minute'+n+'_'+suffix];foulSelections[side][n]=false;render()}else{const suffix=foulPeriod[side]==='1re mi-temps'?'1':'2';const keys=Object.keys(foulSelections[side]).filter(k=>k.startsWith('minute')&&k.endsWith('_'+suffix)&&foulSelections[side][k]);const key=keys.pop();if(key){delete foulSelections[side][key];foulSelections[side][Number(key.slice(6))]=false;render()}}}function buildFoulSquares(side){const counts=document.getElementById('foulCountSquares'),minutes=document.getElementById('foulMinuteSquares');counts.innerHTML='';minutes.innerHTML='';for(let n=1;n<=9;n++){const b=document.createElement('button');b.type='button';b.className='foul-square'+(foulSelections[side][n]?' active':'');b.textContent=n;b.setAttribute('aria-label','Faute '+n);b.onclick=()=>{foulSelections[side][n]=!foulSelections[side][n];b.classList.toggle('active',foulSelections[side][n]);if(foulSelections[side][n]){const m=minutes.querySelector('[data-minute="'+n+'"]');if(m&&m.value)events.push({id:Date.now()+Math.random(),side,team:teamName(side),number:n,type:'Faute',minute:m.value,period:foulPeriod[side],detail:'Faute cumulée n°'+n});render()}};counts.appendChild(b);const input=document.createElement('input');input.type='number';input.min='1';input.max='40';input.placeholder=String(n);input.className='foul-minute';input.setAttribute('aria-label','Minute de la faute '+n);input.dataset.minute=String(n);input.value=foulSelections[side]['minute'+n]||'';input.onchange=()=>{foulSelections[side]['minute'+n]=input.value;if(foulSelections[side][n]&&input.value){events.push({id:Date.now()+Math.random(),side,team:teamName(side),number:n,type:'Faute',minute:input.value,period:foulPeriod[side],detail:'Faute cumulée n°'+n});render()}};minutes.appendChild(input)}}
 function render(){buildHomeFoulTracker('home');buildHomeFoulTracker('away');document.getElementById('hs').textContent=score.home;document.getElementById('as').textContent=score.away;document.getElementById('previewHs').textContent=score.home;document.getElementById('previewAs').textContent=score.away;let el=document.getElementById('events');if(!events.length){el.innerHTML='<p class="small">Aucun événement enregistré.</p>';return}el.innerHTML='';events.forEach((e,i)=>{let p=document.createElement('p');p.textContent=(i+1)+'. '+(e.minute?e.minute+"' · ":'')+e.period+' · '+e.team+' · n°'+e.number+' · '+e.type+(e.detail?' ('+e.detail+')':'');let b=document.createElement('button');b.className='danger noprint';b.textContent='Annuler';b.style.marginLeft='8px';b.onclick=()=>{events.splice(i,1);score={home:events.filter(x=>x.side==='home'&&x.type==='But').length,away:events.filter(x=>x.side==='away'&&x.type==='But').length};render()};p.appendChild(b);el.appendChild(p)})}
+function openReport(){
+  const page=document.getElementById('reportPage');
+  document.getElementById('home').classList.add('hidden');
+  document.getElementById('sheet').classList.add('hidden');
+  page.classList.remove('hidden');
+  page.scrollTop=0;
+  document.getElementById('reportHomeName').textContent=teamName('home');
+  document.getElementById('reportAwayName').textContent=teamName('away');
+  document.getElementById('reportHomeScore').textContent=score.home;
+  document.getElementById('reportAwayScore').textContent=score.away;
+  const content=document.getElementById('reportContent');
+  const safe=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const teamSection=(side)=>{
+    const name=teamName(side);
+    const teamEvents=events.filter(e=>e.side===side);
+    const groups=[
+      {title:'Buts',items:teamEvents.filter(e=>e.type==='But')},
+      {title:'Changements',items:teamEvents.filter(e=>e.type==='Changement')},
+      {title:'Cartons',items:teamEvents.filter(e=>e.type==='Carton')}
+    ];
+    return '<div class="panel"><h3>'+safe(name)+'</h3>'+groups.map(g=>'<h4>'+g.title+' ('+g.items.length+')</h4>'+(g.items.length?'<ul>'+g.items.map(e=>'<li>'+(e.minute?safe(e.minute)+"' · ":'')+safe(e.period||'Match')+' · n°'+safe(e.number)+(e.detail?' · '+safe(e.detail):'')+'</li>').join('')+'</ul>':'<p class="small">Aucun '+g.title.toLowerCase()+' enregistré.</p>')).join('')+'</div>';
+  };
+  content.innerHTML=teamSection('home')+teamSection('away');
+}
+function closeReport(){document.getElementById('reportPage').classList.add('hidden');backHome()}
 function resetEvents(){if(confirm('Effacer tous les événements ?')){events=[];score={home:0,away:0};render()}}
 function validateComposition(){buildHalfRoster('home');buildHalfRoster('away');updatePreview();updateTeamLabels();['goalPlayer','cardPlayer','foulPlayer'].forEach(id=>{const sideId=id.startsWith('goal')?'goalSide':id.startsWith('change')?'changeSide':id.startsWith('card')?'cardSide':'foulSide';populatePlayers(id,sideId)});backHome();}
 function backHome(){buildHalfRoster('home');buildHalfRoster('away');document.getElementById('sheet').classList.add('hidden');document.getElementById('home').classList.remove('hidden');updatePreview();updateTeamLabels()}
