@@ -1,0 +1,18 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'fr.futsalfoot.app'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'fr.futsalfoot.app'
+        minSdk 26
+        targetSdk 28
+        versionCode 37
+        versionName '37'
+    }
+}
+
+dependencies {}
