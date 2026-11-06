@@ -32,7 +32,7 @@ public class MainActivity extends Activity {
 
     private class AndroidBridge {
         @JavascriptInterface
-        public void shareWordModel(String club, String commissioner) {
+        public void shareWordModel(String club, String commissioner, String security) {
             runOnUiThread(() -> {
                 try {
                     File file = new File(getCacheDir(), "rapport-futsal-" + System.currentTimeMillis() + ".docx");
@@ -42,6 +42,9 @@ public class MainActivity extends Activity {
                     String commissionerLine =
                             "<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>Commissaire : </w:t></w:r>" +
                             "<w:r><w:t>" + xmlEscape(commissioner) + "</w:t></w:r></w:p>";
+                    String securityLine =
+                            "<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>Responsable sécurité : </w:t></w:r>" +
+                            "<w:r><w:t>" + xmlEscape(security) + "</w:t></w:r></w:p>";
                     try (InputStream raw = getAssets().open("rapport-futsal-modele.docx");
                          ZipInputStream zin = new ZipInputStream(raw);
                          ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(file))) {
@@ -65,6 +68,12 @@ public class MainActivity extends Activity {
                                 if (paragraphEnd < 0) throw new IllegalStateException("Fin de paragraphe Word introuvable");
                                 paragraphEnd += "</w:p>".length();
                                 document = document.substring(0, paragraphEnd) + commissionerLine + document.substring(paragraphEnd);
+                                int accueilAt = document.indexOf("Accueil par le Président");
+                                if (accueilAt < 0) throw new IllegalStateException("La ligne « Accueil par le Président » est introuvable dans le modèle Word");
+                                int accueilEnd = document.indexOf("</w:p>", accueilAt);
+                                if (accueilEnd < 0) throw new IllegalStateException("Fin de la ligne d’accueil introuvable");
+                                accueilEnd += "</w:p>".length();
+                                document = document.substring(0, accueilEnd) + securityLine + document.substring(accueilEnd);
                                 content = document.getBytes(StandardCharsets.UTF_8);
                             }
                             ZipEntry outEntry = new ZipEntry(entry.getName());
