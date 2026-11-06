@@ -42,9 +42,6 @@ public class MainActivity extends Activity {
                     String commissionerLine =
                             "<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>Commissaire : </w:t></w:r>" +
                             "<w:r><w:t>" + xmlEscape(commissioner) + "</w:t></w:r></w:p>";
-                    String securityLine =
-                            "<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>Responsable sécurité : </w:t></w:r>" +
-                            "<w:r><w:t>" + xmlEscape(security) + "</w:t></w:r></w:p>";
                     try (InputStream raw = getAssets().open("rapport-futsal-modele.docx");
                          ZipInputStream zin = new ZipInputStream(raw);
                          ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(file))) {
@@ -70,10 +67,19 @@ public class MainActivity extends Activity {
                                 document = document.substring(0, paragraphEnd) + commissionerLine + document.substring(paragraphEnd);
                                 int accueilAt = document.indexOf("Accueil par le Président");
                                 if (accueilAt < 0) throw new IllegalStateException("La ligne « Accueil par le Président » est introuvable dans le modèle Word");
+                                int accueilStart = document.lastIndexOf("<w:p", accueilAt);
                                 int accueilEnd = document.indexOf("</w:p>", accueilAt);
-                                if (accueilEnd < 0) throw new IllegalStateException("Fin de la ligne d’accueil introuvable");
+                                if (accueilStart < 0 || accueilEnd < 0) throw new IllegalStateException("Paragraphe d’accueil introuvable");
                                 accueilEnd += "</w:p>".length();
-                                document = document.substring(0, accueilEnd) + securityLine + document.substring(accueilEnd);
+                                int pPrEnd = document.indexOf("</w:pPr>", accueilStart);
+                                String paragraphPrefix = "<w:p>";
+                                if (pPrEnd >= 0 && pPrEnd < accueilAt) {
+                                    paragraphPrefix = document.substring(accueilStart, pPrEnd + "</w:pPr>".length());
+                                }
+                                String accueilReplacement = paragraphPrefix +
+                                        "<w:r><w:t>Accueil par le </w:t></w:r>" +
+                                        "<w:r><w:t>" + xmlEscape(security) + "</w:t></w:r></w:p>";
+                                document = document.substring(0, accueilStart) + accueilReplacement + document.substring(accueilEnd);
                                 content = document.getBytes(StandardCharsets.UTF_8);
                             }
                             ZipEntry outEntry = new ZipEntry(entry.getName());
