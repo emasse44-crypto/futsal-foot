@@ -38,7 +38,8 @@ public class MainActivity extends Activity {
                     File file = new File(getCacheDir(), "rapport-futsal-" + System.currentTimeMillis() + ".docx");
                     String details =
                             "<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>Club visité : </w:t></w:r>" +
-                            "<w:r><w:t>" + xmlEscape(club) + "</w:t></w:r></w:p>" +
+                            "<w:r><w:t>" + xmlEscape(club) + "</w:t></w:r></w:p>";
+                    String commissionerLine =
                             "<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>Commissaire : </w:t></w:r>" +
                             "<w:r><w:t>" + xmlEscape(commissioner) + "</w:t></w:r></w:p>";
                     try (InputStream raw = getAssets().open("rapport-futsal-modele.docx");
@@ -57,6 +58,13 @@ public class MainActivity extends Activity {
                                 int insertAt = bodyStart >= 0 ? document.indexOf(">", bodyStart) + 1 : -1;
                                 if (insertAt <= 0) throw new IllegalStateException("Structure Word non reconnue");
                                 document = document.substring(0, insertAt) + details + document.substring(insertAt);
+                                int presentationAt = document.indexOf("Présentation du commissaire");
+                                if (presentationAt < 0) presentationAt = document.indexOf("Présentation du commissaire du club");
+                                if (presentationAt < 0) throw new IllegalStateException("La ligne de présentation du commissaire est introuvable dans le modèle Word");
+                                int paragraphEnd = document.indexOf("</w:p>", presentationAt);
+                                if (paragraphEnd < 0) throw new IllegalStateException("Fin de paragraphe Word introuvable");
+                                paragraphEnd += "</w:p>".length();
+                                document = document.substring(0, paragraphEnd) + commissionerLine + document.substring(paragraphEnd);
                                 content = document.getBytes(StandardCharsets.UTF_8);
                             }
                             ZipEntry outEntry = new ZipEntry(entry.getName());
