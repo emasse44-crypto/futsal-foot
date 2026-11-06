@@ -10,8 +10,24 @@ android {
         applicationId 'fr.futsalfoot.app'
         minSdk 26
         targetSdk 28
-        versionCode 47
-        versionName '47'
+        versionCode 48
+        versionName '48'
+    }
+
+    signingConfigs {
+        release {
+            storeFile file(System.getenv("ANDROID_KEYSTORE_FILE") ?: "release-keystore.jks")
+            storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+            keyAlias System.getenv("ANDROID_KEY_ALIAS")
+            keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+        }
     }
 }
 
