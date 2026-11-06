@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#123b70">
 <meta name="description" content="Table de marque de futsal : score, buts, changements, cartons et fautes cumulées.">
-
-
-
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>Futsal Foot</title>
 <style>
 :root{font-family:Arial,Helvetica,sans-serif;color:#172033;background:#eef3f8}
@@ -36,7 +36,7 @@ button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 15p
 </head>
 <body><div class="wrap">
 <div id="saveStatus" style="position:sticky;top:0;z-index:20;background:#e7f7ed;color:#14532d;border:1px solid #a7e0bb;border-radius:8px;padding:7px 10px;margin-bottom:10px;font-size:13px">Sauvegarde locale activée</div>
-<header><h1>⚽ FUTSAL FOOT</h1><p>Table de marque futsal · Version test V37</p></header>
+<header><h1>⚽ FUTSAL FOOT</h1><p>Table de marque futsal · Version test V39</p></header>
 <section id="home" class="panel">
 <h2>Accueil · Table de marque</h2>
 <p class="small">Les noms des équipes seront renseignés dans la composition et repris automatiquement ici.</p>
@@ -55,7 +55,7 @@ button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 15p
 </section>
 <section id="reportPage" class="hidden form-page">
 <div class="panel scoreline"><span id="reportHomeName">Équipe recevante</span><span class="score"><span id="reportHomeScore">0</span> - <span id="reportAwayScore">0</span></span><span id="reportAwayName">Équipe visiteuse</span></div>
-<div class="panel"><h2>Rapport du match</h2><p class="small">Événements classés par équipe.</p><div id="reportContent"></div><div class="actions"><button class="secondary" onclick="closeReport()">← Retour à l’accueil</button></div></div>
+<div class="panel"><h2>Rapport du match</h2><p class="small">Club visité : <strong id="reportVisitedClub"></strong></p><p class="small">Commissaire : <strong id="reportCommissioner"></strong></p><p class="small">Événements classés par équipe.</p><div id="reportContent"></div><div class="actions"><button class="primary" type="button" onclick="shareWordModel()">📤 Envoyer le modèle Word</button><button class="secondary" onclick="closeReport()">← Retour à l’accueil</button></div></div>
 </section>
 <section id="sheet" class="hidden">
 <div class="panel scoreline"><span id="homeTitle">Équipe recevante</span><span class="score"><span id="hs">0</span> - <span id="as">0</span></span><span id="awayTitle">Équipe visiteuse</span></div>
@@ -75,6 +75,7 @@ button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 15p
 <div><label for="table1">Table de marque 1</label><input id="table1" type="text" placeholder="Nom"></div>
 <div><label for="table2">Table de marque 2</label><input id="table2" type="text" placeholder="Nom"></div>
 <div><label for="securityManager">Responsable sécurité</label><input id="securityManager" type="text" placeholder="Nom du responsable sécurité"></div>
+<div><label for="commissionerName">Commissaire</label><input id="commissionerName" type="text" placeholder="Nom du commissaire"></div>
 </div></div>
 <div class="names">
 <div class="team"><h2 id="hTeam">Équipe recevante</h2><label>5 titulaires</label><div id="hStarters" class="numbers"></div><label>Remplaçants (jusqu'à 7)</label><div id="hSubs" class="numbers"></div><p class="small">Joueur sélectionné : <strong id="hSelected">aucun</strong></p><label>Staff (4 personnes)</label><div class="staff-rows" id="hStaffRows"></div></div>
@@ -160,6 +161,8 @@ function openReport(){
   document.getElementById('reportAwayName').textContent=teamName('away');
   document.getElementById('reportHomeScore').textContent=score.home;
   document.getElementById('reportAwayScore').textContent=score.away;
+  document.getElementById('reportVisitedClub').textContent=teamName('home');
+  document.getElementById('reportCommissioner').textContent=document.getElementById('commissionerName').value.trim()||'Non renseigné';
   const content=document.getElementById('reportContent');
   const safe=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const teamSection=(side)=>{
@@ -173,6 +176,27 @@ function openReport(){
     return '<div class="panel"><h3>'+safe(name)+'</h3>'+groups.map(g=>'<h4>'+g.title+' ('+g.items.length+')</h4>'+(g.items.length?'<ul>'+g.items.map(e=>{const time=e.minute?safe(e.minute)+"'":'';if(g.title==='Changements'){const d=String(e.detail||'');const outgoing=(d.match(/sortant\s*n°?\s*(\d+)/i)||[])[1]||(d.match(/titulaire\s*n°?\s*(\d+)/i)||[])[1]||'';const incoming=(d.match(/remplaçant\s*n°?\s*(\d+)/i)||[])[1]||'';return '<li>'+time+' · Sortant n°'+safe(outgoing||'—')+' · Entrant n°'+safe(incoming||'—')+'</li>'}if(g.title==='Buts')return '<li>'+time+' · Buteur n°'+safe(e.number)+'</li>';if(g.title==='Cartons')return '<li>'+time+' · Joueur n°'+safe(e.number)+(e.detail?' · '+safe(e.detail):'')+'</li>';return '<li>'+time+' · n°'+safe(e.number)+(e.detail?' · '+safe(e.detail):'')+'</li>'}).join('')+'</ul>':'<p class="small">Aucun '+g.title.toLowerCase()+' enregistré.</p>')).join('')+'</div>';
   };
   content.innerHTML=teamSection('home')+teamSection('away');
+}
+async function shareWordModel(){
+  const fileName='rapport-futsal-modele.docx';
+  if(window.AndroidBridge&&typeof window.AndroidBridge.shareWordModel==='function'){
+    window.AndroidBridge.shareWordModel();
+    return;
+  }
+  try{
+    const response=await fetch('./'+fileName);
+    if(!response.ok)throw new Error('Téléchargement impossible');
+    const blob=await response.blob();
+    const file=new File([blob],fileName,{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})&&navigator.share){
+      await navigator.share({files:[file],title:'Modèle de rapport futsal'});
+    }else{
+      const url=URL.createObjectURL(blob),a=document.createElement('a');
+      a.href=url;a.download=fileName;document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1500);
+      alert('Le modèle Word a été téléchargé. Tu peux ensuite le joindre à ton message.');
+    }
+  }catch(error){alert('Impossible de partager le modèle Word : '+error.message);}
 }
 function closeReport(){document.getElementById('reportPage').classList.add('hidden');backHome()}
 function resetEvents(){if(confirm('Effacer tous les événements ?')){events=[];score={home:0,away:0};render()}}
