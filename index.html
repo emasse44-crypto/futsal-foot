@@ -36,7 +36,12 @@ button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 15p
 </head>
 <body><div class="wrap">
 <div id="saveStatus" style="position:sticky;top:0;z-index:20;background:#e7f7ed;color:#14532d;border:1px solid #a7e0bb;border-radius:8px;padding:7px 10px;margin-bottom:10px;font-size:13px">Sauvegarde locale activée</div>
-<header><h1>⚽ FUTSAL FOOT</h1><p>Table de marque futsal · Version test V39</p></header>
+<div class="noprint" style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px">
+<button type="button" class="secondary" onclick="exportMatchBackup()">⬇️ Sauvegarder mes données</button>
+<button type="button" class="secondary" onclick="document.getElementById('backupImportFile').click()">⬆️ Restaurer une sauvegarde</button>
+<input id="backupImportFile" type="file" accept=".json,application/json" style="display:none" onchange="importMatchBackup(event)">
+</div>
+<header><h1>⚽ FUTSAL FOOT</h1><p>Table de marque futsal · Version test V40</p></header>
 <section id="home" class="panel">
 <h2>Accueil · Table de marque</h2>
 <p class="small">Les noms des équipes seront renseignés dans la composition et repris automatiquement ici.</p>
@@ -229,6 +234,37 @@ function futsalPersist() {
     const status = document.getElementById('saveStatus');
     if (status) status.textContent = 'Sauvegarde indisponible dans ce mode d’ouverture';
   }
+}
+
+function exportMatchBackup(){
+  try{
+    const fields={};
+    document.querySelectorAll('input[id],select[id],textarea[id]').forEach(el=>{
+      fields[el.id]=(el.type==='checkbox'||el.type==='radio')?el.checked:el.value;
+    });
+    const state={format:'futsal-foot-backup',version:1,fields,events,score,foulSelections,foulPeriod,changeValues,changeSaved,halfRosterValues,selected,savedAt:new Date().toISOString()};
+    const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download='sauvegarde-futsal-foot.json';document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+    const status=document.getElementById('saveStatus');if(status)status.textContent='✓ Sauvegarde téléchargée. Conserve ce fichier avant de changer d’application.';
+  }catch(e){alert('Impossible de créer la sauvegarde : '+e.message);}
+}
+function importMatchBackup(event){
+  const file=event.target.files&&event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const state=JSON.parse(reader.result);
+      if(!state||state.format!=='futsal-foot-backup'||!state.fields)throw new Error('Ce fichier ne correspond pas à une sauvegarde Futsal Foot.');
+      localStorage.setItem(FUTSAL_SAVE_KEY,JSON.stringify(state));
+      alert('Sauvegarde importée. L’application va redémarrer pour restaurer le match.');
+      location.reload();
+    }catch(e){alert('Restauration impossible : '+e.message);}
+    event.target.value='';
+  };
+  reader.onerror=()=>alert('Lecture du fichier impossible.');
+  reader.readAsText(file);
 }
 function futsalRestore() {
   let state;
