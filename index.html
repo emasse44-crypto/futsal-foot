@@ -187,7 +187,8 @@ async function shareWordModel(){
   if(window.AndroidBridge&&typeof window.AndroidBridge.shareWordModel==='function'){
     const club=document.getElementById('reportVisitedClub')?.textContent||'';
     const commissioner=document.getElementById('reportCommissioner')?.textContent||'';
-    window.AndroidBridge.shareWordModel(club,commissioner);
+    const security=document.getElementById('securityManager')?.value.trim()||'Non renseigné';
+    window.AndroidBridge.shareWordModel(club,commissioner,security);
     return;
   }
   try{
