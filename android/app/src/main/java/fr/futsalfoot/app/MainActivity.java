@@ -67,9 +67,6 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> {
                 try {
                     File file = new File(getCacheDir(), "rapport-futsal-" + System.currentTimeMillis() + ".docx");
-                    String details =
-                            "<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>Club visité : </w:t></w:r>" +
-                            "<w:r><w:t>" + xmlEscape(club) + "</w:t></w:r></w:p>";
                     try (InputStream raw = getAssets().open("rapport-futsal-modele.docx");
                          ZipInputStream zin = new ZipInputStream(raw);
                          ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(file))) {
@@ -85,13 +82,12 @@ public class MainActivity extends Activity {
                                 int bodyStart = document.indexOf("<w:body");
                                 int insertAt = bodyStart >= 0 ? document.indexOf(">", bodyStart) + 1 : -1;
                                 if (insertAt <= 0) throw new IllegalStateException("Structure Word non reconnue");
-                                document = document.substring(0, insertAt) + details + document.substring(insertAt);
                                 document = replaceWordParagraph(document,
                                         "Présentation du commissaire",
                                         "Présentation du commissaire du club visité : " + commissioner);
                                 document = replaceWordParagraph(document,
                                         "Accueil par le Président",
-                                        "Accueil par le " + security);
+                                        "Accueil par le responsable sécurité : " + security);
                                 content = document.getBytes(StandardCharsets.UTF_8);
                             }
                             ZipEntry outEntry = new ZipEntry(entry.getName());
