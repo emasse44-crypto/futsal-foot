@@ -11,24 +11,60 @@ import android.webkit.WebViewClient;
 import android.view.Window;
 import android.view.WindowManager;
 import androidx.core.content.FileProvider;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 public class MainActivity extends Activity {
     private WebView webView;
 
+    private String xmlEscape(String value) {
+        if (value == null) return "";
+        return value.replace("&", "&amp;").replace("<", "&lt;")
+                .replace(">", "&gt;").replace("\"", "&quot;")
+                .replace("'", "&apos;");
+    }
+
     private class AndroidBridge {
         @JavascriptInterface
-        public void shareWordModel() {
+        public void shareWordModel(String club, String commissioner) {
             runOnUiThread(() -> {
                 try {
-                    File file = new File(getCacheDir(), "rapport-futsal-modele.docx");
-                    try (InputStream in = getAssets().open("rapport-futsal-modele.docx");
-                         FileOutputStream out = new FileOutputStream(file)) {
-                        byte[] buffer = new byte[8192];
-                        int length;
-                        while ((length = in.read(buffer)) > 0) out.write(buffer, 0, length);
+                    File file = new File(getCacheDir(), "rapport-futsal-" + System.currentTimeMillis() + ".docx");
+                    String details =
+                            "<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>Club visité : </w:t></w:r>" +
+                            "<w:r><w:t>" + xmlEscape(club) + "</w:t></w:r></w:p>" +
+                            "<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>Commissaire : </w:t></w:r>" +
+                            "<w:r><w:t>" + xmlEscape(commissioner) + "</w:t></w:r></w:p>";
+                    try (InputStream raw = getAssets().open("rapport-futsal-modele.docx");
+                         ZipInputStream zin = new ZipInputStream(raw);
+                         ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(file))) {
+                        ZipEntry entry;
+                        while ((entry = zin.getNextEntry()) != null) {
+                            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                            byte[] buffer = new byte[8192];
+                            int length;
+                            while ((length = zin.read(buffer)) > 0) bytes.write(buffer, 0, length);
+                            byte[] content = bytes.toByteArray();
+                            if ("word/document.xml".equals(entry.getName())) {
+                                String document = new String(content, StandardCharsets.UTF_8);
+                                int bodyStart = document.indexOf("<w:body");
+                                int insertAt = bodyStart >= 0 ? document.indexOf(">", bodyStart) + 1 : -1;
+                                if (insertAt <= 0) throw new IllegalStateException("Structure Word non reconnue");
+                                document = document.substring(0, insertAt) + details + document.substring(insertAt);
+                                content = document.getBytes(StandardCharsets.UTF_8);
+                            }
+                            ZipEntry outEntry = new ZipEntry(entry.getName());
+                            zout.putNextEntry(outEntry);
+                            zout.write(content);
+                            zout.closeEntry();
+                            zin.closeEntry();
+                        }
                     }
                     Uri uri = FileProvider.getUriForFile(MainActivity.this,
                             getPackageName() + ".fileprovider", file);
@@ -36,10 +72,11 @@ public class MainActivity extends Activity {
                     send.setType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
                     send.putExtra(Intent.EXTRA_STREAM, uri);
                     send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    startActivity(Intent.createChooser(send, "Envoyer le modèle Word"));
+                    startActivity(Intent.createChooser(send, "Envoyer le rapport Word"));
                 } catch (Exception e) {
                     android.widget.Toast.makeText(MainActivity.this,
-                            "Impossible de partager le modèle Word", android.widget.Toast.LENGTH_LONG).show();
+                            "Impossible de préparer le rapport Word : " + e.getMessage(),
+                            android.widget.Toast.LENGTH_LONG).show();
                 }
             });
         }
