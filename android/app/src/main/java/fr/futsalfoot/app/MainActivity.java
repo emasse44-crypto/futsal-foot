@@ -39,9 +39,6 @@ public class MainActivity extends Activity {
                     String details =
                             "<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>Club visité : </w:t></w:r>" +
                             "<w:r><w:t>" + xmlEscape(club) + "</w:t></w:r></w:p>";
-                    String commissionerLine =
-                            "<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>Commissaire : </w:t></w:r>" +
-                            "<w:r><w:t>" + xmlEscape(commissioner) + "</w:t></w:r></w:p>";
                     try (InputStream raw = getAssets().open("rapport-futsal-modele.docx");
                          ZipInputStream zin = new ZipInputStream(raw);
                          ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(file))) {
@@ -61,10 +58,19 @@ public class MainActivity extends Activity {
                                 int presentationAt = document.indexOf("Présentation du commissaire");
                                 if (presentationAt < 0) presentationAt = document.indexOf("Présentation du commissaire du club");
                                 if (presentationAt < 0) throw new IllegalStateException("La ligne de présentation du commissaire est introuvable dans le modèle Word");
+                                int presentationStart = document.lastIndexOf("<w:p", presentationAt);
                                 int paragraphEnd = document.indexOf("</w:p>", presentationAt);
-                                if (paragraphEnd < 0) throw new IllegalStateException("Fin de paragraphe Word introuvable");
+                                if (presentationStart < 0 || paragraphEnd < 0) throw new IllegalStateException("Paragraphe de présentation du commissaire introuvable");
                                 paragraphEnd += "</w:p>".length();
-                                document = document.substring(0, paragraphEnd) + commissionerLine + document.substring(paragraphEnd);
+                                int presentationPPrEnd = document.indexOf("</w:pPr>", presentationStart);
+                                String presentationPrefix = "<w:p>";
+                                if (presentationPPrEnd >= 0 && presentationPPrEnd < presentationAt) {
+                                    presentationPrefix = document.substring(presentationStart, presentationPPrEnd + "</w:pPr>".length());
+                                }
+                                String presentationReplacement = presentationPrefix +
+                                        "<w:r><w:t>Présentation du commissaire du club visité : </w:t></w:r>" +
+                                        "<w:r><w:t>" + xmlEscape(commissioner) + "</w:t></w:r></w:p>";
+                                document = document.substring(0, presentationStart) + presentationReplacement + document.substring(paragraphEnd);
                                 int accueilAt = document.indexOf("Accueil par le Président");
                                 if (accueilAt < 0) throw new IllegalStateException("La ligne « Accueil par le Président » est introuvable dans le modèle Word");
                                 int accueilStart = document.lastIndexOf("<w:p", accueilAt);
