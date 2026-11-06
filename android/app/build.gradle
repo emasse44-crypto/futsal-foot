@@ -15,4 +15,6 @@ android {
     }
 }
 
-dependencies {\n    implementation 'androidx.core:core:1.13.1'\n}
+dependencies {
+    implementation 'androidx.core:core:1.13.1'
+}
