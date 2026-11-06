@@ -30,6 +30,37 @@ public class MainActivity extends Activity {
                 .replace("'", "&apos;");
     }
 
+    private String replaceWordParagraph(String document, String searchText, String replacementText) {
+        int cursor = 0;
+        while (true) {
+            int start = document.indexOf("<w:p", cursor);
+            if (start < 0) break;
+            int startTagEnd = document.indexOf(">", start);
+            int end = document.indexOf("</w:p>", startTagEnd);
+            if (startTagEnd < 0 || end < 0) break;
+            String paragraph = document.substring(start, end + "</w:p>".length());
+            String plain = paragraph.replaceAll("<[^>]+>", "")
+                    .replace("&amp;", "&").replace("&lt;", "<")
+                    .replace("&gt;", ">").replace("&quot;", "\"")
+                    .replace("&apos;", "'");
+            if (plain.contains(searchText)) {
+                String properties = "";
+                int pPrStart = paragraph.indexOf("<w:pPr");
+                if (pPrStart >= 0) {
+                    int pPrEnd = paragraph.indexOf("</w:pPr>", pPrStart);
+                    if (pPrEnd >= 0) properties = paragraph.substring(pPrStart, pPrEnd + "</w:pPr>".length());
+                }
+                String replacement = "<w:p>" + properties +
+                        "<w:r><w:t xml:space=\"preserve\">" + xmlEscape(replacementText) +
+                        "</w:t></w:r></w:p>";
+                return document.substring(0, start) + replacement +
+                        document.substring(end + "</w:p>".length());
+            }
+            cursor = end + "</w:p>".length();
+        }
+        throw new IllegalStateException("Paragraphe introuvable dans le modèle Word : " + searchText);
+    }
+
     private class AndroidBridge {
         @JavascriptInterface
         public void shareWordModel(String club, String commissioner, String security) {
@@ -55,37 +86,12 @@ public class MainActivity extends Activity {
                                 int insertAt = bodyStart >= 0 ? document.indexOf(">", bodyStart) + 1 : -1;
                                 if (insertAt <= 0) throw new IllegalStateException("Structure Word non reconnue");
                                 document = document.substring(0, insertAt) + details + document.substring(insertAt);
-                                int presentationAt = document.indexOf("Présentation du commissaire");
-                                if (presentationAt < 0) presentationAt = document.indexOf("Présentation du commissaire du club");
-                                if (presentationAt < 0) throw new IllegalStateException("La ligne de présentation du commissaire est introuvable dans le modèle Word");
-                                int presentationStart = document.lastIndexOf("<w:p", presentationAt);
-                                int paragraphEnd = document.indexOf("</w:p>", presentationAt);
-                                if (presentationStart < 0 || paragraphEnd < 0) throw new IllegalStateException("Paragraphe de présentation du commissaire introuvable");
-                                paragraphEnd += "</w:p>".length();
-                                int presentationPPrEnd = document.indexOf("</w:pPr>", presentationStart);
-                                String presentationPrefix = "<w:p>";
-                                if (presentationPPrEnd >= 0 && presentationPPrEnd < presentationAt) {
-                                    presentationPrefix = document.substring(presentationStart, presentationPPrEnd + "</w:pPr>".length());
-                                }
-                                String presentationReplacement = presentationPrefix +
-                                        "<w:r><w:t>Présentation du commissaire du club visité : </w:t></w:r>" +
-                                        "<w:r><w:t>" + xmlEscape(commissioner) + "</w:t></w:r></w:p>";
-                                document = document.substring(0, presentationStart) + presentationReplacement + document.substring(paragraphEnd);
-                                int accueilAt = document.indexOf("Accueil par le Président");
-                                if (accueilAt < 0) throw new IllegalStateException("La ligne « Accueil par le Président » est introuvable dans le modèle Word");
-                                int accueilStart = document.lastIndexOf("<w:p", accueilAt);
-                                int accueilEnd = document.indexOf("</w:p>", accueilAt);
-                                if (accueilStart < 0 || accueilEnd < 0) throw new IllegalStateException("Paragraphe d’accueil introuvable");
-                                accueilEnd += "</w:p>".length();
-                                int pPrEnd = document.indexOf("</w:pPr>", accueilStart);
-                                String paragraphPrefix = "<w:p>";
-                                if (pPrEnd >= 0 && pPrEnd < accueilAt) {
-                                    paragraphPrefix = document.substring(accueilStart, pPrEnd + "</w:pPr>".length());
-                                }
-                                String accueilReplacement = paragraphPrefix +
-                                        "<w:r><w:t>Accueil par le </w:t></w:r>" +
-                                        "<w:r><w:t>" + xmlEscape(security) + "</w:t></w:r></w:p>";
-                                document = document.substring(0, accueilStart) + accueilReplacement + document.substring(accueilEnd);
+                                document = replaceWordParagraph(document,
+                                        "Présentation du commissaire",
+                                        "Présentation du commissaire du club visité : " + commissioner);
+                                document = replaceWordParagraph(document,
+                                        "Accueil par le Président",
+                                        "Accueil par le " + security);
                                 content = document.getBytes(StandardCharsets.UTF_8);
                             }
                             ZipEntry outEntry = new ZipEntry(entry.getName());
